@@ -1,4 +1,4 @@
-import Card from "./Card";
+import Card from "./card-component";
 import Link from "next/link";
 import styles from "./section-cards.module.css";
 
