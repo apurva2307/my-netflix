@@ -4,7 +4,7 @@ import styles from "./section-cards.module.css";
 
 const SectionCards = (props) => {
   const { title, videos, size, shouldWrap = false, shouldScale } = props;
-  if (!videos) {
+  if (!videos || videos.length == 0) {
     return (
       <section className={styles.container}>
         <h2 className={styles.title}>{title}</h2>
@@ -18,10 +18,9 @@ const SectionCards = (props) => {
       <div className={`${styles.cardWrapper} ${shouldWrap ? styles.wrap : ""}`}>
         {videos.map((video, idx) => {
           return (
-            <Link href={`/video/${video.id}`}>
+            <Link href={`/video/${video.id}`} key={idx.toString()}>
               <a>
                 <Card
-                  key={idx.toString()}
                   id={idx}
                   imgUrl={video.imgUrl}
                   size={size}
