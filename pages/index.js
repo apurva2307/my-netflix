@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Head from "next/head";
-import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import Banner from "../components/banner/Banner";
 import Navbar from "../components/nav/Navbar";
 import { getVideos, getPopularVideos } from "../lib/videos";
 import SectionCards from "../components/card/section-cards";
-
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { firebaseConfig } from "../lib/firebase-config";
+import { magic } from "../lib/magic-client";
 export async function getServerSideProps() {
   // Fetch data from external API
   const disneyVideos = await getVideos("Disney");
@@ -25,6 +28,31 @@ const Home = ({
   travelVideos,
   popularVideos,
 }) => {
+  const [username, setUsername] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const app = initializeApp(firebaseConfig);
+  }, []);
+  useEffect(async () => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
+        setUsername(user.email);
+        return;
+      } else {
+        router.push("/login");
+      }
+    });
+    if (localStorage.getItem("magic")) {
+      const { email } = await magic.user?.getMetadata();
+      if (email) {
+        setUsername(email);
+        return;
+      }
+    }
+  }, []);
   return (
     <div className={styles.container}>
       <Head>
@@ -33,7 +61,7 @@ const Home = ({
         <link rel="icon" href="/netflix.ico" />
       </Head>
       <div className={styles.main}>
-        <Navbar />
+        <Navbar username={username} />
         <Banner
           videoId="4zH5iYM4wJo"
           title="Clifford the red dog"

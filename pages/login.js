@@ -6,13 +6,30 @@ import Image from "next/image";
 
 import { magic } from "../lib/magic-client";
 import styles from "../styles/Login.module.css";
-
+import { initializeApp } from "firebase/app";
+import {
+  GoogleAuthProvider,
+  getAuth,
+  signInWithPopup,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { firebaseConfig } from "../lib/firebase-config";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [userMsg, setUserMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  useEffect(() => {
+    const app = initializeApp(firebaseConfig);
+  }, []);
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push("/");
+      }
+    });
+  }, []);
   useEffect(() => {
     const handleComplete = () => {
       setIsLoading(false);
@@ -31,7 +48,27 @@ const Login = () => {
     const email = e.target.value;
     setEmail(email);
   };
-
+  const handleGoogleSignin = () => {
+    const provider = new GoogleAuthProvider();
+    const auth = getAuth();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        const user = result.user;
+        if (user) {
+          router.push("/");
+        }
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.message);
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        console.log(credential);
+        setIsLoading(false);
+        setUserMsg("Something went wrong. Try again later.");
+      });
+  };
   const handleLoginWithEmail = async (e) => {
     e.preventDefault();
 
@@ -44,6 +81,7 @@ const Login = () => {
           showUI: false,
         });
         if (didToken) {
+          localStorage.setItem("magic", "true");
           router.push("/");
           // const response = await fetch("/api/login", {
           //   method: "POST",
@@ -108,6 +146,9 @@ const Login = () => {
           <p className={styles.userMsg}>{userMsg}</p>
           <button onClick={handleLoginWithEmail} className={styles.loginBtn}>
             {isLoading ? "Loading..." : "Sign In"}
+          </button>
+          <button onClick={handleGoogleSignin} className={styles.loginBtn}>
+            {isLoading ? "Loading..." : "Sign In with google"}
           </button>
         </div>
       </main>

@@ -4,18 +4,12 @@ import styles from "./navbar.module.css";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
-import { magic } from "../../lib/magic-client";
+import { getAuth, deleteUser } from "firebase/auth";
 
-const Navbar = () => {
+const Navbar = ({ username }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [username, setUsername] = useState("");
   const [didToken, setDidToken] = useState("");
   const router = useRouter();
-  useEffect(async () => {
-    const { email } = await magic.user.getMetadata();
-    console.log(email);
-    setUsername(email);
-  }, []);
 
   const handleOnClickHome = () => {
     router.push("/");
@@ -30,18 +24,28 @@ const Navbar = () => {
   };
 
   const handleSignout = async () => {
+    if (localStorage.getItem("magic")) {
+      localStorage.removeItem("magic");
+    }
+
     try {
-      const response = await fetch("/api/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${didToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const res = await response.json();
+      const auth = getAuth();
+      // const user = auth.currentUser;
+      // const res = await deleteUser(user);
+      await auth.signOut();
+      router.push("/");
+      console.log("res>>", res);
+      // const response = await fetch("/api/logout", {
+      //   method: "POST",
+      //   headers: {
+      //     Authorization: `Bearer ${didToken}`,
+      //     "Content-Type": "application/json",
+      //   },
+      // });
+      // const res = await response.json();
     } catch (error) {
       console.error("Error logging out", error);
-      router.push("/login");
+      // router.push("/login");
     }
   };
 
