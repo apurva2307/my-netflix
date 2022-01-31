@@ -4,12 +4,18 @@ import styles from "./navbar.module.css";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
+import { magic } from "../../lib/magic-client";
 
 const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [username, setUsername] = useState("");
   const [didToken, setDidToken] = useState("");
   const router = useRouter();
+  useEffect(async () => {
+    const { email } = await magic.user.getMetadata();
+    console.log(email);
+    setUsername(email);
+  }, []);
 
   const handleOnClickHome = () => {
     router.push("/");
@@ -66,7 +72,7 @@ const Navbar = () => {
         <nav className={styles.navContainer}>
           <div>
             <button className={styles.usernameBtn} onClick={handleShowDropdown}>
-              <p className={styles.username}>sksingh.jhs@gmail.com</p>
+              <p className={styles.username}>{username}</p>
               {/** Expand more icon */}
               <Image
                 src={"/static/expand_more.svg"}
